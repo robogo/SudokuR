@@ -75,13 +75,16 @@ public class SudokuView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
+        int width = getWidth();
+        int height = getHeight();
         int size = Math.min(getWidth(), getHeight());
         float margin = size * marginRatio;
         float gridSize = size - margin * 2;
         float cellSize = gridSize / Sudoku.Size;
         mTextPaint.setTextSize(cellSize * 0.75f);
 
-        fillRect(canvas, margin, margin, gridSize, Color.WHITE);
+        fillRect(canvas, 0, 0, width, height, Color.DKGRAY);
+        fillRect(canvas, margin, margin, gridSize, gridSize, Color.WHITE);
 
         if (sudokuBoard != null && sudokuBoard.getInitialized()) {
             drawBoard(canvas, margin, margin, cellSize, sudokuBoard);
@@ -103,7 +106,8 @@ public class SudokuView extends View {
         if (numPad.visible) {
             float x1 = getNumPadPos(numPad.x, margin, cellSize);
             float y1 = getNumPadPos(numPad.y, margin, cellSize);
-            fillRect(canvas, x1, y1, cellSize * NumPad.Size, Color.CYAN);
+            float s = cellSize * NumPad.Size;
+            fillRect(canvas, x1, y1, s, s, Color.CYAN);
             drawBoard(canvas, x1, y1, cellSize, numPad);
             drawGrid(canvas, x1, y1, cellSize, NumPad.Size, NumPad.Size);
         }
@@ -136,9 +140,9 @@ public class SudokuView extends View {
         return true;
     }
 
-    void fillRect(Canvas canvas, float x, float y, float size, int color) {
+    void fillRect(Canvas canvas, float x, float y, float width, float height, int color) {
         mCellPaint.setColor(color);
-        canvas.drawRect(x, y, x + size, y + size, mCellPaint);
+        canvas.drawRect(x, y, x + width, y + height, mCellPaint);
     }
 
     void drawGrid(Canvas canvas, float x, float y, float cell, int count, int sub) {

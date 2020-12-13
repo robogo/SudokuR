@@ -2,4 +2,8 @@
     <string name="app_name">SudokuR</string>
     <string name="button_new_game">New Game</string>
     <string name="button_option">Option</string>
+    <string name="level_novice">Novice</string>
+    <string name="level_casual">Casual</string>
+    <string name="level_skilled">Skilled</string>
+    <string name="level_expert">Expert</string>
 </resources>

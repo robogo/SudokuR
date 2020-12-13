@@ -1,35 +1,44 @@
 package com.robogo.sudokur;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Random;
 
 public class Sudoku {
     public static final int Size = 9;
 
     public static int[][] generate(int level) {
+        // generate a full board
         int[][] board = new int[Size][];
         for (int i = 0; i < Size; i++) {
             for (int j = 0; j < Size; j++) {
                 board[i] = new int[Size];
             }
         }
-
         tryGenerate(board);
 
-        Random random = new Random();
-        level = Math.max(1, Math.min(level, 4));
-        int toRemove = Size * Size - (17 + (4 - level) * 2);
-        int removed = 0;
-        while (removed < toRemove) {
-            int i = random.nextInt(Size);
-            int j = random.nextInt(Size);
-            int val = board[i][j];
-            if (val > 0) {
-                board[i][j] = 0;
-                removed++;
+        // keep removing cells based on difficulty level
+        level = Math.max(0, Math.min(3, level));
+        int minToKeep = 18 + (3 - level) * 3;
+        ArrayList<Integer> list = new ArrayList<Integer>();
+        for (int i = 0; i < Size * Size; i++)
+            list.add(i);
+        Collections.shuffle(list);
+        int possibility = 1;
+        while (list.size() > minToKeep && possibility < level + 2) {
+            boolean removed = false;
+            for (int i = 0; i < list.size(); i++) {
+                int x = list.get(i) / Size;
+                int y = list.get(i) % Size;
+                if (findPossible(board, x, y, null) <= possibility) {
+                    board[x][y] = 0;
+                    list.remove(i);
+                    removed = true;
+                    break;
+                }
+            }
+            if (!removed) {
+                possibility++;
             }
         }
 
@@ -60,8 +69,9 @@ public class Sudoku {
         if (fr < 0)
             return true;
 
-        ArrayList<Integer> list = findPossible(board, fr, fc);
-        if (list.size() == 0) {
+        ArrayList<Integer> list = new ArrayList<>();
+        int count = findPossible(board, fr, fc, list);
+        if (count == 0) {
             return false;
         }
 
@@ -88,8 +98,9 @@ public class Sudoku {
             for (int j = 0; j  < col; j++) {
                 if (board[i][j] == 0) {
                     hasZero = true;
-                    ArrayList<Integer> list = findPossible(board, i, j);
-                    if (list.size() == 0)
+                    ArrayList<Integer> list = new ArrayList<>();
+                    int count = findPossible(board, i, j, list);
+                    if (count == 0)
                         return false;
                     if (first == null || first.size() > list.size()) {
                         first = list;
@@ -120,30 +131,35 @@ public class Sudoku {
         System.out.println();
     }
 
-    static ArrayList<Integer> findPossible(int[][] board, int row, int col) {
-        ArrayList<Integer> list = new ArrayList<>();
+    static int findPossible(int[][] board, int row, int col, ArrayList<Integer> list) {
         int bits = 0xFFFF;
+        int count = 0;
         for (int i = 0; i < board[row].length; i++) {
-            if (board[row][i] > 0)
+            if (i != col && board[row][i] > 0)
                 bits &= ~(1 << board[row][i]);
         }
         for (int i = 0; i < board.length; i++) {
-            if (board[i][col] > 0)
+            if (i != row && board[i][col] > 0)
                 bits &= ~(1 << board[i][col]);
         }
         int rr = row / 3 * 3;
         int cc = col / 3 * 3;
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
-                int bv = board[rr + i][cc + j];
-                if (bv > 0)
-                    bits &= ~(1 << bv);
+                if (rr + i != row && cc + j != col) {
+                    int bv = board[rr + i][cc + j];
+                    if (bv > 0)
+                        bits &= ~(1 << bv);
+                }
             }
         }
         for (int i = 1; i <= board.length; i++) {
-            if ((bits & (1 << i)) > 0)
-                list.add(i);
+            if ((bits & (1 << i)) > 0) {
+                count++;
+                if (list != null)
+                    list.add(i);
+            }
         }
-        return list;
+        return count;
     }
 }
