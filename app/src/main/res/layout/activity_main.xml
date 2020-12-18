@@ -15,35 +15,47 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintDimensionRatio="1"
             android:id="@+id/sudoku_view"/>
+    <Space
+            android:id="@+id/space_after_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/sudoku_view"
+            android:layout_marginTop="30dp"/>
     <Button
-            android:text="Level"
+            android:id="@+id/button_level"
+            android:text="@string/button_level"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/button_level"
-            app:layout_constraintEnd_toStartOf="@id/button_new"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/sudoku_view"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/button_new"
+            app:layout_constraintTop_toBottomOf="@id/space_after_view"
             android:onClick="onLevel"/>
     <Button
+            android:id="@+id/button_new"
             android:text="@string/button_new_game"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/button_new"
-            app:layout_constraintEnd_toStartOf="@id/button_option"
             app:layout_constraintStart_toEndOf="@id/button_level"
-            app:layout_constraintTop_toBottomOf="@id/sudoku_view"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/button_solution"
+            app:layout_constraintTop_toBottomOf="@id/space_after_view"
             android:onClick="onNewGame"/>
     <Button
+            android:id="@+id/button_solution"
+            android:text="@string/button_solution"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@id/button_new"
+            app:layout_constraintEnd_toStartOf="@id/button_option"
+            app:layout_constraintTop_toBottomOf="@id/space_after_view"
+            android:onClick="onSolution" />
+    <Button
+            android:id="@+id/button_option"
             android:text="@string/button_option"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/button_option"
+            app:layout_constraintStart_toEndOf="@id/button_solution"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/sudoku_view"
-            app:layout_constraintStart_toEndOf="@id/button_new"
+            app:layout_constraintTop_toBottomOf="@id/space_after_view"
             android:onClick="onOption" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

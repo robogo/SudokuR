@@ -44,4 +44,8 @@ public class SudokuBoard extends Board {
     public void setValue(int x, int y, int value) {
         board[x][y] = value;
     }
+
+    public void solve() {
+        Sudoku.solve(board);
+    }
 }

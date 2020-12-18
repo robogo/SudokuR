@@ -36,6 +36,11 @@ public class MainActivity extends AppCompatActivity {
         sudokuView.invalidate();
     }
 
+    public void onSolution(View view) {
+        sudokuBoard.solve();
+        sudokuView.invalidate();
+    }
+
     public void onOption(View view) {
     }
 
