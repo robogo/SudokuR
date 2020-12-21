@@ -89,7 +89,7 @@ public class SudokuView extends View {
         if (sudokuBoard != null && sudokuBoard.getInitialized()) {
             drawBoard(canvas, margin, margin, cellSize, sudokuBoard);
         }
-        drawGrid(canvas, margin, margin, cellSize, Sudoku.Size, Sudoku.Size / 3);
+        drawGrid(canvas, margin, margin, cellSize, Sudoku.Size, Sudoku.Size, Sudoku.Size / 3);
 
         // focused
         if (sudokuBoard != null && sudokuBoard.getInitialized()) {
@@ -106,10 +106,11 @@ public class SudokuView extends View {
         if (numPad.visible) {
             float x1 = getNumPadPos(numPad.x, margin, cellSize);
             float y1 = getNumPadPos(numPad.y, margin, cellSize);
-            float s = cellSize * NumPad.Size;
-            fillRect(canvas, x1, y1, s, s, Color.CYAN);
+            float w = cellSize * NumPad.Size;
+            float h = cellSize * (NumPad.Size + 1);
+            fillRect(canvas, x1, y1, w, h, Color.CYAN);
             drawBoard(canvas, x1, y1, cellSize, numPad);
-            drawGrid(canvas, x1, y1, cellSize, NumPad.Size, NumPad.Size);
+            drawGrid(canvas, x1, y1, cellSize, NumPad.Size + 1, NumPad.Size, 100);
         }
     }
 
@@ -145,15 +146,19 @@ public class SudokuView extends View {
         canvas.drawRect(x, y, x + width, y + height, mCellPaint);
     }
 
-    void drawGrid(Canvas canvas, float x, float y, float cell, int count, int sub) {
+    void drawGrid(Canvas canvas, float x, float y, float cell, int row, int col, int sub) {
         mLinePaint.setColor(Color.BLACK);
-        float x2 = x + cell * count;
-        float y2 = y + cell * count;
-        for (int i = 0; i <= count; i++) {
-            float pos = i * cell;
-            mLinePaint.setStrokeWidth(i % sub == 0 ? 2 : 1);
-            canvas.drawLine(x, y + pos, x2, y + pos, mLinePaint);
-            canvas.drawLine(x + pos, y, x + pos, y2, mLinePaint);
+        float x2 = x + cell * col;
+        for (int i = 0; i <= col; i++) {
+            float pos = y + i * cell;
+            mLinePaint.setStrokeWidth(i % sub == 0 ? 3 : 1);
+            canvas.drawLine(x, pos, x2, pos, mLinePaint);
+        }
+        float y2 = y + cell * row;
+        for (int i = 0; i <= row; i++) {
+            float pos = x + i * cell;
+            mLinePaint.setStrokeWidth(i % sub == 0 ? 3 : 1);
+            canvas.drawLine(pos, y, pos, y2, mLinePaint);
         }
     }
 
