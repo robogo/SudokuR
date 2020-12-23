@@ -3,13 +3,14 @@ package com.robogo.sudokur;
 import android.app.Dialog;
 import android.view.*;
 import android.widget.Button;
+import android.widget.ImageButton;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 
 public class MainActivity extends AppCompatActivity {
     private SudokuView sudokuView;
     private SudokuBoard sudokuBoard;
-    private Button buttonLevel;
+    private ImageButton buttonLevel;
     private int level;
 
     @Override
@@ -17,18 +18,18 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        level = 0;
+        level = 1;
         sudokuBoard = new SudokuBoard();
 
         buttonLevel = findViewById(R.id.button_level);
         sudokuView = findViewById(R.id.sudoku_view);
         sudokuView.setSudokuBoard(sudokuBoard);
-        buttonLevel.setText(getLevelId(level));
+        buttonLevel.setImageResource(getLevelId(level));
     }
 
     public void onLevel(View view) {
         level = (level + 1) % 4;
-        buttonLevel.setText(getLevelId(level));
+        buttonLevel.setImageResource(getLevelId(level));
     }
 
     public void onNewGame(View view) {
@@ -46,10 +47,10 @@ public class MainActivity extends AppCompatActivity {
 
     int getLevelId(int level) {
         switch (level) {
-            case 0: return R.string.level_novice;
-            case 1: return R.string.level_casual;
-            case 2: return R.string.level_skilled;
-            case 3: return R.string.level_expert;
+            case 0: return R.drawable.ic_level1;
+            case 1: return R.drawable.ic_level2;
+            case 2: return R.drawable.ic_level3;
+            case 3: return R.drawable.ic_level4;
             default: return -1;
         }
     }

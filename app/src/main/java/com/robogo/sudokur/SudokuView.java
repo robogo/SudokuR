@@ -45,7 +45,7 @@ public class SudokuView extends View {
 
         Resources res = getResources();
         icLock = res.getDrawable(R.drawable.ic_lock, getContext().getTheme());
-        icOpen = res.getDrawable(R.drawable.ic_open, getContext().getTheme());
+        icOpen = res.getDrawable(R.drawable.ic_unlock, getContext().getTheme());
         icFlag = res.getDrawable(R.drawable.ic_flag, getContext().getTheme());
         icDel = res.getDrawable(R.drawable.ic_del, getContext().getTheme());
     }

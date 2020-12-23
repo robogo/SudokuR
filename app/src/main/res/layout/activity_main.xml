@@ -21,41 +21,78 @@
             android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@id/sudoku_view"
             android:layout_marginTop="30dp"/>
-    <Button
-            android:id="@+id/button_level"
-            android:text="@string/button_level"
+    <ImageButton
+            android:id="@+id/button_option"
+            android:src="@drawable/ic_opt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:backgroundTint="@android:color/white"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/button_new"
+            app:layout_constraintEnd_toStartOf="@id/layout_auto"
             app:layout_constraintTop_toBottomOf="@id/space_after_view"
-            android:onClick="onLevel"/>
-    <Button
-            android:id="@+id/button_new"
-            android:text="@string/button_new_game"
+            android:onClick="onOption" />
+    <LinearLayout android:id="@+id/layout_auto"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  app:layout_constraintStart_toEndOf="@id/button_option"
+                  app:layout_constraintEnd_toStartOf="@id/button_manual"
+                  app:layout_constraintTop_toBottomOf="@id/space_after_view">
+        <ImageButton
+                android:id="@+id/button_level"
+                android:src="@drawable/ic_level1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@android:color/white"
+                android:paddingRight="0dp"
+                android:onClick="onLevel"/>
+        <ImageButton
+                android:id="@+id/button_auto"
+                android:src="@drawable/ic_auto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@android:color/white"
+                android:paddingLeft="0dp"
+                android:onClick="onNewGame"/>
+    </LinearLayout>
+    <ImageButton
+            android:id="@+id/button_manual"
+            android:src="@drawable/ic_manual"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintStart_toEndOf="@id/button_level"
+            android:backgroundTint="@android:color/white"
+            app:layout_constraintStart_toEndOf="@id/layout_auto"
+            app:layout_constraintEnd_toStartOf="@id/button_undo"
+            app:layout_constraintTop_toBottomOf="@id/space_after_view"
+            android:onClick="onNewGame"/>
+    <ImageButton
+            android:id="@+id/button_undo"
+            android:src="@drawable/ic_undo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@android:color/white"
+            app:layout_constraintStart_toEndOf="@id/button_manual"
+            app:layout_constraintEnd_toStartOf="@id/button_undo_n"
+            app:layout_constraintTop_toBottomOf="@id/space_after_view"
+            android:onClick="onNewGame"/>
+    <ImageButton
+            android:id="@+id/button_undo_n"
+            android:src="@drawable/ic_undo_n"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@android:color/white"
+            app:layout_constraintStart_toEndOf="@id/button_undo"
             app:layout_constraintEnd_toStartOf="@id/button_solution"
             app:layout_constraintTop_toBottomOf="@id/space_after_view"
             android:onClick="onNewGame"/>
-    <Button
+    <ImageButton
             android:id="@+id/button_solution"
-            android:text="@string/button_solution"
+            android:src="@drawable/ic_solution"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintStart_toEndOf="@id/button_new"
-            app:layout_constraintEnd_toStartOf="@id/button_option"
-            app:layout_constraintTop_toBottomOf="@id/space_after_view"
-            android:onClick="onSolution" />
-    <Button
-            android:id="@+id/button_option"
-            android:text="@string/button_option"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toEndOf="@id/button_solution"
+            android:backgroundTint="@android:color/white"
+            app:layout_constraintStart_toEndOf="@id/button_undo_n"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/space_after_view"
-            android:onClick="onOption" />
+            android:onClick="onSolution" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
