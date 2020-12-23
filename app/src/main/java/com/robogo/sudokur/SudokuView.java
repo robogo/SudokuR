@@ -1,18 +1,27 @@
 package com.robogo.sudokur;
 
 import android.content.Context;
-import android.graphics.*;
+import android.content.res.Resources;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
 public class SudokuView extends View {
-    private float marginRatio;
-    private Paint mLinePaint;
-    private Paint mCellPaint;
-    private Paint mTextPaint;
+    private final float marginRatio;
+    private final Paint mLinePaint;
+    private final Paint mCellPaint;
+    private final Paint mTextPaint;
+    private final Drawable icLock;
+    private final Drawable icOpen;
+    private final Drawable icFlag;
+    private final Drawable icDel;
     private SudokuBoard sudokuBoard;
-    private Point focus;
+    private Cell focus;
     private NumPad numPad;
 
     public SudokuView(Context context) {
@@ -22,8 +31,8 @@ public class SudokuView extends View {
     public SudokuView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        numPad = new NumPad();
-        focus = new Point(-1, -1);
+        numPad = new NumPad(this);
+        focus = new Cell(-1, -1);
         marginRatio = 0.05f;
         mLinePaint = new Paint();
         mCellPaint = new Paint();
@@ -33,6 +42,12 @@ public class SudokuView extends View {
         mCellPaint.setStyle(Paint.Style.FILL);
         mTextPaint.setColor(Color.BLACK);
         mTextPaint.setTextAlign(Paint.Align.CENTER);
+
+        Resources res = getResources();
+        icLock = res.getDrawable(R.drawable.ic_lock, getContext().getTheme());
+        icOpen = res.getDrawable(R.drawable.ic_open, getContext().getTheme());
+        icFlag = res.getDrawable(R.drawable.ic_flag, getContext().getTheme());
+        icDel = res.getDrawable(R.drawable.ic_del, getContext().getTheme());
     }
 
     public void setSudokuBoard(SudokuBoard sudokuBoard) {
@@ -55,7 +70,7 @@ public class SudokuView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (sudokuBoard != null && !sudokuBoard.getReadonly()) {
+        if (sudokuBoard != null && !sudokuBoard.readonly()) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     break;
@@ -86,16 +101,17 @@ public class SudokuView extends View {
         fillRect(canvas, 0, 0, width, height, Color.DKGRAY);
         fillRect(canvas, margin, margin, gridSize, gridSize, Color.WHITE);
 
-        if (sudokuBoard != null && sudokuBoard.getInitialized()) {
-            drawBoard(canvas, margin, margin, cellSize, sudokuBoard);
+        if (sudokuBoard != null && sudokuBoard.initialized()) {
+            drawBoard(canvas, margin, margin, cellSize);
         }
+
         drawGrid(canvas, margin, margin, cellSize, Sudoku.Size, Sudoku.Size, Sudoku.Size / 3);
 
         // focused
-        if (sudokuBoard != null && sudokuBoard.getInitialized()) {
-            if (focus.x >= 0 && focus.y >= 0) {
-                float x = margin + focus.x * cellSize;
-                float y = margin + focus.y * cellSize;
+        if (sudokuBoard != null && sudokuBoard.initialized()) {
+            if (focus.row >= 0 && focus.col >= 0) {
+                float x = margin + focus.col * cellSize;
+                float y = margin + focus.row * cellSize;
                 mLinePaint.setColor(Color.RED);
                 mLinePaint.setStrokeWidth(3);
                 canvas.drawRect(x, y, x + cellSize, y + cellSize, mLinePaint);
@@ -104,38 +120,64 @@ public class SudokuView extends View {
 
         // num pad
         if (numPad.visible) {
-            float x1 = getNumPadPos(numPad.x, margin, cellSize);
-            float y1 = getNumPadPos(numPad.y, margin, cellSize);
-            float w = cellSize * NumPad.Size;
-            float h = cellSize * (NumPad.Size + 1);
-            fillRect(canvas, x1, y1, w, h, Color.CYAN);
-            drawBoard(canvas, x1, y1, cellSize, numPad);
-            drawGrid(canvas, x1, y1, cellSize, NumPad.Size + 1, NumPad.Size, 100);
+            float x1 = getNumPadPos(numPad.left, margin, cellSize);
+            float y1 = getNumPadPos(numPad.top, margin, cellSize);
+            fillRect(canvas, x1, y1, cellSize * numPad.col(), cellSize * numPad.row(), Color.CYAN);
+            drawNumPad(canvas, x1, y1, cellSize);
+            drawGrid(canvas, x1, y1, cellSize, numPad.row(), numPad.col(),99);
         }
     }
 
     boolean onMotionUp(MotionEvent event) {
+        // x and pt.x are translated to col, as y/pt.y to row
         float x = event.getX();
         float y = event.getY();
-        Point pt = getCell(x, y);
-        if (pt == null) {
+        Cell cell = getCell(x, y);
+        if (cell == null) {
             numPad.hide();
         } else {
-            int num = numPad.get(pt);
-            if (num > 0) {
-                sudokuBoard.setValue(focus.x, focus.y, num);
+            int num = numPad.get(cell.row, cell.col);
+            Log.i("VIEW", String.format("pad:%d,%d cell:%d,%d, num:%d", numPad.left, numPad.top, cell.row, cell.col, num));
+            switch (num) {
+            case NumPad.LOCK:
+                if (sudokuBoard.locked(focus.row, focus.col))
+                    sudokuBoard.unlock(focus.row, focus.col);
+                else
+                    sudokuBoard.lock(focus.row, focus.col);
                 numPad.hide();
-            } else {
-                if (pt.x == focus.x && pt.y == focus.y) {
+                break;
+            case NumPad.CLEAR:
+                sudokuBoard.clear(focus.row, focus.col);
+                numPad.hide();
+                break;
+            case NumPad.FLAG:
+                if (sudokuBoard.flagged(focus.row, focus.col))
+                    sudokuBoard.unflag(focus.row, focus.col);
+                else
+                    sudokuBoard.flag(focus.row, focus.col);
+                numPad.hide();
+                break;
+            default:
+                if (num > 0) {
+                    if (!sudokuBoard.locked(focus.row, focus.col))
+                        sudokuBoard.set(focus.row, focus.col, num);
                     numPad.hide();
                 } else {
-                    focus.set(pt.x, pt.y);
-                    if (sudokuBoard.readonly(pt.x, pt.y)) {
+                    if (cell.row == focus.row && cell.col == focus.col && numPad.visible) {
                         numPad.hide();
                     } else {
-                        numPad.show(getNumPadIndex(pt.x), getNumPadIndex(pt.y));
+                        focus.set(cell.row, cell.col);
+                        if (sudokuBoard.readonly(cell.row, cell.col)) {
+                            numPad.hide();
+                        } else {
+                            int rr = getNumPadIndex(cell.row, numPad.row());
+                            int cc = getNumPadIndex(cell.col, numPad.col());
+                            numPad.show(rr, cc, !sudokuBoard.locked(rr, cc));
+                            Log.i("VIEW", String.format("cell:%d,%d pad:%d,%d", cell.row, cell.col, rr, cc));
+                        }
                     }
                 }
+                break;
             }
         }
         return true;
@@ -151,27 +193,39 @@ public class SudokuView extends View {
         float x2 = x + cell * col;
         for (int i = 0; i <= col; i++) {
             float pos = y + i * cell;
-            mLinePaint.setStrokeWidth(i % sub == 0 ? 3 : 1);
+            mLinePaint.setStrokeWidth(i % sub == 0 ? 2 : 1);
             canvas.drawLine(x, pos, x2, pos, mLinePaint);
         }
         float y2 = y + cell * row;
         for (int i = 0; i <= row; i++) {
             float pos = x + i * cell;
-            mLinePaint.setStrokeWidth(i % sub == 0 ? 3 : 1);
+            mLinePaint.setStrokeWidth(i % sub == 0 ? 2 : 1);
             canvas.drawLine(pos, y, pos, y2, mLinePaint);
         }
     }
 
-    void drawBoard(Canvas canvas, float x, float y, float cell, Board board) {
-        for (int i = 0; i < board.size(); i++) {
-            for (int j = 0; j < board.size(); j++) {
-                float xx = x + i * cell;
-                float yy = y + j * cell;
-                if (board.readonly(i, j)) {
+    void drawBoard(Canvas canvas, float x, float y, float cell) {
+        for (int i = 0; i < sudokuBoard.row(); i++) {
+            for (int j = 0; j < sudokuBoard.col(); j++) {
+                float xx = x + j * cell;
+                float yy = y + i * cell;
+                if (sudokuBoard.readonly(i, j)) {
                     mCellPaint.setColor(Color.LTGRAY);
                     canvas.drawRect(xx, yy, xx + cell, yy + cell, mCellPaint);
                 }
-                int value = board.value(i, j);
+                int icx = (int)xx;
+                int icy = (int)yy;
+                int ics = (int)(cell / 2);
+                if (sudokuBoard.locked(i, j)) {
+                    icLock.setBounds(icx, icy, icx + ics, icy + ics);
+                    icLock.draw(canvas);
+                    icy += ics;
+                }
+                if (sudokuBoard.flagged(i, j)) {
+                    icFlag.setBounds(icx, icy, icx + ics, icy + ics);
+                    icFlag.draw(canvas);
+                }
+                int value = sudokuBoard.value(i, j);
                 if (value > 0) {
                     xx += cell / 2;
                     yy += cell / 2 - (mTextPaint.ascent() + mTextPaint.descent()) / 2;
@@ -181,15 +235,40 @@ public class SudokuView extends View {
         }
     }
 
-    int getNumPadIndex(int n) {
-        return n <= 4 ? (n + 1) : (n - 3);
+    void drawNumPad(Canvas canvas, float x, float y, float cell) {
+        for (int i = 0; i < numPad.row(); i++) {
+            for (int j = 0; j < numPad.col(); j++) {
+                float xx = x + j * cell;
+                float yy = y + i * cell;
+                int value = numPad.value(i, j);
+                if (value < NumPad.LOCK) {
+                    xx += cell / 2;
+                    yy += cell / 2 - (mTextPaint.ascent() + mTextPaint.descent()) / 2;
+                    canvas.drawText(Integer.toString(value), xx, yy, mTextPaint);
+                } else {
+                    Drawable d;
+                    if (value == NumPad.LOCK)
+                        d = sudokuBoard.locked(focus.row, focus.col) ? icOpen : icLock;
+                    else if (value == NumPad.CLEAR)
+                        d = icDel;
+                    else
+                        d = icFlag;
+                    d.setBounds((int)xx, (int)yy, (int)(xx + cell), (int)(yy + cell));
+                    d.draw(canvas);
+                }
+            }
+        }
+    }
+
+    int getNumPadIndex(int n, int max) {
+        return n <= max ? (n + 1) : (n - max);
     }
 
     float getNumPadPos(int n, float margin, float cellSize) {
         return n * cellSize + margin;
     }
 
-    Point getCell(float x, float y) {
+    Cell getCell(float x, float y) {
         int size = Math.min(getWidth(), getHeight());
         float margin = size * marginRatio;
         if (x < margin || x > size - margin)
@@ -199,48 +278,85 @@ public class SudokuView extends View {
         x -= margin;
         y -= margin;
         float cellSize = (size - margin - margin) / Sudoku.Size;
-        return new Point((int)(x / cellSize), (int)(y / cellSize));
+        return new Cell((int)(y / cellSize), (int)(x / cellSize));
+    }
+
+    static class Cell {
+        int row;
+        int col;
+        public Cell(int r, int c) {
+            set(r, c);
+        }
+        public void set(int r, int c) {
+            row = r;
+            col = c;
+        }
     }
 
     static class NumPad extends Board {
-        static final int Size = 3;
+        static final int LOCK = 10;
+        static final int FLAG = 11;
+        static final int CLEAR = 12;
+        private final SudokuView parent;
+        int left;
+        int top;
+        boolean showNumbers;
         boolean visible;
-        int x;
-        int y;
 
-        public void show(int x, int y) {
-            this.x = x;
-            this.y = y;
+        public NumPad(SudokuView parent) {
+            this.parent = parent;
+            showNumbers = true;
+        }
+
+        public void show(int row, int col, boolean number) {
+            this.top = row;
+            this.left = col;
+            this.showNumbers = number;
             this.visible = true;
         }
 
         public void hide() {
-            this.x = this.y = -1;
+            this.top = this.left = -1;
             this.visible = false;
         }
 
-        public int get(Point pt) {
+        public int get(int row, int col) {
             if (visible &&
-                pt.x >= x && pt.x < x + Size &&
-                pt.y >= y && pt.y < y + Size) {
-                return 1 + (pt.x - x) + (pt.y - y) * Size;
+                col >= left && col < left + col() &&
+                row >= top && row < top + row()) {
+                int index = 1 + (row - top) * col() + (col - left);
+                if (!showNumbers)
+                    index += LOCK;
+                return index;
             }
             return 0;
         }
 
         @Override
-        public int size() {
-            return Size;
+        public int row() {
+            return showNumbers ? 4 : 1;
         }
+
+        @Override
+        public int col() { return 3; }
 
         @Override
         public int value(int i, int j) {
-            return 1 + i + j * Size;
+            int numRows = showNumbers ? 3 : 0;
+            if (i == numRows) {
+                if (j == 0) return LOCK;
+                if (j == 1) return FLAG;
+                if (j == 2) return CLEAR;
+                return 0;
+            } else if (i < numRows) {
+                return 1 + i * 3 + j;
+            }
+            return 0;
         }
 
         @Override
-        public boolean readonly(int i, int j) {
-            return false;
+        public int flags(int i, int j) {
+            return 0;
         }
     }
 }
