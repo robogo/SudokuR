@@ -70,7 +70,7 @@ public class SudokuView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (sudokuBoard != null && !sudokuBoard.readonly()) {
+        if (sudokuBoard != null) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     break;

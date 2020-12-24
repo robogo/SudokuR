@@ -63,7 +63,7 @@
             app:layout_constraintStart_toEndOf="@id/layout_auto"
             app:layout_constraintEnd_toStartOf="@id/button_undo"
             app:layout_constraintTop_toBottomOf="@id/space_after_view"
-            android:onClick="onNewGame"/>
+            android:onClick="onManualGame"/>
     <ImageButton
             android:id="@+id/button_undo"
             android:src="@drawable/ic_undo"

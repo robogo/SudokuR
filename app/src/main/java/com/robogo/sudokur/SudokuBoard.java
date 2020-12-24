@@ -1,27 +1,29 @@
 package com.robogo.sudokur;
 
-public class SudokuBoard extends Board {
-    private int[][] board;
-    private boolean readonly = true;
+import java.io.IOException;
+import java.io.Serializable;
 
-    public void init(int[][] board, boolean readOnly) {
+public class SudokuBoard extends Board implements Serializable {
+    public static final String NAME = "com.robogo.sudokur.Board";
+    private int[][] board;
+
+    public void init(int[][] board) {
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[i].length; j++) {
-                if (readOnly || board[i][j] > 0) {
+                if (board[i][j] > 0) {
                     board[i][j] |= READONLY_MASK;
                 }
             }
         }
         this.board = board;
-        this.readonly = readOnly;
+    }
+
+    public void init(SudokuBoard board) {
+        init(board.board);
     }
 
     public boolean initialized() {
         return board != null;
-    }
-
-    public boolean readonly() {
-        return readonly;
     }
 
     @Override
@@ -70,12 +72,38 @@ public class SudokuBoard extends Board {
         Sudoku.solve(board);
     }
 
-    void set(int i, int j, int bitMask, int value) {
+    private void set(int i, int j, int bitMask, int value) {
         board[i][j] &= ~bitMask;
         board[i][j] |= value;
     }
 
-    int get(int i, int j, int bitMask) {
+    private int get(int i, int j, int bitMask) {
         return board[i][j] & bitMask;
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+        if (board == null) {
+            out.writeInt(-1);
+        } else {
+            out.writeInt(board.length);
+            out.writeInt(board[0].length);
+            for (int i = 0; i < board.length; i++) {
+                for (int j = 0; j < board[i].length; j++) {
+                    out.writeInt(board[i][j]);
+                }
+            }
+        }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws IOException {
+        int row = in.readInt();
+        if (row == -1) return;
+        int col = in.readInt();
+        board = new int[row][];
+        for (int i = 0; i < row; i++) {
+            board[i] = new int[col];
+            for (int j = 0; j < col; j++)
+                board[i][j] = in.readInt();
+        }
     }
 }
