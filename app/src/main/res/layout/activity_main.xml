@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@id/sudoku_view"
-            android:layout_marginTop="30dp"/>
+            android:layout_marginTop="10dp"/>
     <ImageButton
             android:id="@+id/button_option"
             android:src="@drawable/ic_opt"
@@ -73,7 +73,7 @@
             app:layout_constraintStart_toEndOf="@id/button_manual"
             app:layout_constraintEnd_toStartOf="@id/button_undo_n"
             app:layout_constraintTop_toBottomOf="@id/space_after_view"
-            android:onClick="onNewGame"/>
+            android:onClick="onUndo"/>
     <ImageButton
             android:id="@+id/button_undo_n"
             android:src="@drawable/ic_undo_n"
@@ -83,7 +83,7 @@
             app:layout_constraintStart_toEndOf="@id/button_undo"
             app:layout_constraintEnd_toStartOf="@id/button_solution"
             app:layout_constraintTop_toBottomOf="@id/space_after_view"
-            android:onClick="onNewGame"/>
+            android:onClick="onUndoN"/>
     <ImageButton
             android:id="@+id/button_solution"
             android:src="@drawable/ic_solution"

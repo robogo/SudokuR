@@ -1,10 +1,8 @@
 package com.robogo.sudokur;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Intent;
-import android.view.*;
-import android.widget.Button;
+import android.view.View;
 import android.widget.ImageButton;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
@@ -43,6 +41,16 @@ public class MainActivity extends AppCompatActivity {
     public void onManualGame(View view) {
         Intent intent = new Intent(this, EditActivity.class);
         startActivityForResult(intent, LAUNCH_EDIT_ACTIVITY);
+    }
+
+    public void onUndo(View view) {
+        sudokuBoard.undo();
+        sudokuView.invalidate();
+    }
+
+    public void onUndoN(View view) {
+        sudokuBoard.undoN();
+        sudokuView.invalidate();
     }
 
     public void onSolution(View view) {
