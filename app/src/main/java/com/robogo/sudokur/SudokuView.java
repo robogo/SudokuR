@@ -12,7 +12,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 public class SudokuView extends View {
-    private final float marginRatio;
+    private static final int REGION_WIDTH = 3;
     private final Paint mLinePaint;
     private final Paint mCellPaint;
     private final Paint mTextPaint;
@@ -33,7 +33,6 @@ public class SudokuView extends View {
 
         numPad = new NumPad(this);
         focus = new Cell(-1, -1);
-        marginRatio = 0.05f;
         mLinePaint = new Paint();
         mCellPaint = new Paint();
         mTextPaint = new Paint();
@@ -70,7 +69,7 @@ public class SudokuView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (sudokuBoard != null) {
+        if (sudokuBoard != null && sudokuBoard.initialized()) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     break;
@@ -93,25 +92,23 @@ public class SudokuView extends View {
         int width = getWidth();
         int height = getHeight();
         int size = Math.min(getWidth(), getHeight());
-        float margin = size * marginRatio;
-        float gridSize = size - margin * 2;
-        float cellSize = gridSize / Sudoku.Size;
+        float cellSize = size / Sudoku.Size;
         mTextPaint.setTextSize(cellSize * 0.75f);
 
         fillRect(canvas, 0, 0, width, height, Color.DKGRAY);
-        fillRect(canvas, margin, margin, gridSize, gridSize, Color.WHITE);
+        fillRect(canvas, 0, 0, size, size, Color.WHITE);
 
         if (sudokuBoard != null && sudokuBoard.initialized()) {
-            drawBoard(canvas, margin, margin, cellSize);
+            drawBoard(canvas, 0, 0, cellSize);
         }
 
-        drawGrid(canvas, margin, margin, cellSize, Sudoku.Size, Sudoku.Size, Sudoku.Size / 3);
+        drawGrid(canvas, 0, 0, cellSize, Sudoku.Size, Sudoku.Size, Sudoku.Size / 3);
 
         // focused
         if (sudokuBoard != null && sudokuBoard.initialized()) {
             if (focus.row >= 0 && focus.col >= 0) {
-                float x = margin + focus.col * cellSize;
-                float y = margin + focus.row * cellSize;
+                float x = focus.col * cellSize;
+                float y = focus.row * cellSize;
                 mLinePaint.setColor(Color.RED);
                 mLinePaint.setStrokeWidth(3);
                 canvas.drawRect(x, y, x + cellSize, y + cellSize, mLinePaint);
@@ -120,8 +117,8 @@ public class SudokuView extends View {
 
         // num pad
         if (numPad.visible) {
-            float x1 = getNumPadPos(numPad.left, margin, cellSize);
-            float y1 = getNumPadPos(numPad.top, margin, cellSize);
+            float x1 = getNumPadPos(numPad.left, cellSize);
+            float y1 = getNumPadPos(numPad.top, cellSize);
             fillRect(canvas, x1, y1, cellSize * numPad.col(), cellSize * numPad.row(), Color.CYAN);
             drawNumPad(canvas, x1, y1, cellSize);
             drawGrid(canvas, x1, y1, cellSize, numPad.row(), numPad.col(),99);
@@ -193,13 +190,13 @@ public class SudokuView extends View {
         float x2 = x + cell * col;
         for (int i = 0; i <= col; i++) {
             float pos = y + i * cell;
-            mLinePaint.setStrokeWidth(i % sub == 0 ? 2 : 1);
+            mLinePaint.setStrokeWidth(i % sub == 0 ? REGION_WIDTH : 1);
             canvas.drawLine(x, pos, x2, pos, mLinePaint);
         }
         float y2 = y + cell * row;
         for (int i = 0; i <= row; i++) {
             float pos = x + i * cell;
-            mLinePaint.setStrokeWidth(i % sub == 0 ? 2 : 1);
+            mLinePaint.setStrokeWidth(i % sub == 0 ? REGION_WIDTH : 1);
             canvas.drawLine(pos, y, pos, y2, mLinePaint);
         }
     }
@@ -264,20 +261,17 @@ public class SudokuView extends View {
         return n <= max ? (n + 1) : (n - max);
     }
 
-    float getNumPadPos(int n, float margin, float cellSize) {
-        return n * cellSize + margin;
+    float getNumPadPos(int n, float cellSize) {
+        return n * cellSize;
     }
 
     Cell getCell(float x, float y) {
         int size = Math.min(getWidth(), getHeight());
-        float margin = size * marginRatio;
-        if (x < margin || x > size - margin)
+        if (x < 0 || x > size)
             return null;
-        if (y < margin || y > size - margin)
+        if (y < 0 || y > size)
             return null;
-        x -= margin;
-        y -= margin;
-        float cellSize = (size - margin - margin) / Sudoku.Size;
+        float cellSize = size / Sudoku.Size;
         return new Cell((int)(y / cellSize), (int)(x / cellSize));
     }
 
