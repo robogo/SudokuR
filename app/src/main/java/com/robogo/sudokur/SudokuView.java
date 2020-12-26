@@ -232,6 +232,7 @@ public class SudokuView extends View {
     }
 
     private void drawNumPad(Canvas canvas, float x, float y, float cell) {
+        mTextPaint.setColor(Color.BLACK);
         for (int i = 0; i < numPad.row(); i++) {
             for (int j = 0; j < numPad.col(); j++) {
                 float xx = x + j * cell;
@@ -275,9 +276,9 @@ public class SudokuView extends View {
     }
 
     private void congrad() {
-        new ParticleSystem((Activity) getContext(), 200, R.drawable.ic_flower, 5000)
+        new ParticleSystem((Activity) getContext(), 100, R.drawable.ic_flower, 4000)
                 .setSpeedRange(0.2f, 0.5f)
-                .oneShot(this, 50);
+                .oneShot(this, 30);
     }
 
     static class Cell {
