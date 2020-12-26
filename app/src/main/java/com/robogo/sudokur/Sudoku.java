@@ -51,6 +51,34 @@ public class Sudoku {
         return trySolve(board);
     }
 
+    public static long check(int[][] board, int row, int col, int val) {
+        int rowConflict = 0;
+        int colConflict = 0;
+        int squareConflict = 0;
+        for (int i = 0; i < board.length; i++) {
+            int value = board[i][col] & 0xFF;
+            if (i != row && value == val)
+                rowConflict = (i << 8) + col;
+        }
+        for (int i = 0; i < board[row].length; i++) {
+            int value = board[row][i] & 0xFF;
+            if (i != col && value == val)
+                colConflict = (row << 8) + i;
+        }
+        int rr = row / 3 * 3;
+        int cc = col / 3 * 3;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (rr + i != row && cc + j != col) {
+                    int bv = board[rr + i][cc + j] & 0xFF;
+                    if (bv == val)
+                        squareConflict = (rr + i) << 8 + (cc + j);
+                }
+            }
+        }
+        return (squareConflict << 32) + (colConflict << 16) + rowConflict;
+    }
+
     static boolean tryGenerate(int[][] board) {
         int row = board.length;
         int col = board[0].length;
@@ -96,7 +124,8 @@ public class Sudoku {
         int fc = -1;
         for (int i = 0; i < row; i++) {
             for (int j = 0; j  < col; j++) {
-                if (board[i][j] == 0) {
+                int value = board[i][j] & 0xFF;
+                if (value == 0) {
                     hasZero = true;
                     ArrayList<Integer> list = new ArrayList<>();
                     int count = findPossible(board, i, j, list);
@@ -115,11 +144,13 @@ public class Sudoku {
             return !hasZero;
 
         for (int i = 0; i < first.size(); i++) {
-            board[fr][fc] = first.get(i);
+            int old = board[fr][fc];
+            board[fr][fc] &= ~0xFF;
+            board[fr][fc] |= first.get(i);
             boolean ret = trySolve(board);
             if (ret)
                 return ret;
-            board[fr][fc] = 0;
+            board[fr][fc] = old;
         }
 
         return false;
@@ -135,19 +166,21 @@ public class Sudoku {
         int bits = 0xFFFF;
         int count = 0;
         for (int i = 0; i < board[row].length; i++) {
-            if (i != col && board[row][i] > 0)
-                bits &= ~(1 << board[row][i]);
+            int value = board[row][i] & 0xFF;
+            if (i != col && value > 0)
+                bits &= ~(1 << value);
         }
         for (int i = 0; i < board.length; i++) {
-            if (i != row && board[i][col] > 0)
-                bits &= ~(1 << board[i][col]);
+            int value = board[i][col] & 0xFF;
+            if (i != row && value > 0)
+                bits &= ~(1 << value);
         }
         int rr = row / 3 * 3;
         int cc = col / 3 * 3;
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 if (rr + i != row && cc + j != col) {
-                    int bv = board[rr + i][cc + j];
+                    int bv = board[rr + i][cc + j] & 0xFF;
                     if (bv > 0)
                         bits &= ~(1 << bv);
                 }

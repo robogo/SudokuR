@@ -137,10 +137,7 @@ public class SudokuView extends View {
             Log.i("VIEW", String.format("pad:%d,%d cell:%d,%d, num:%d", numPad.left, numPad.top, cell.row, cell.col, num));
             switch (num) {
             case NumPad.LOCK:
-                if (sudokuBoard.locked(focus.row, focus.col))
-                    sudokuBoard.unlock(focus.row, focus.col);
-                else
-                    sudokuBoard.lock(focus.row, focus.col);
+                sudokuBoard.lock(focus.row, focus.col, !sudokuBoard.locked(focus.row, focus.col));
                 numPad.hide();
                 break;
             case NumPad.CLEAR:
@@ -148,10 +145,7 @@ public class SudokuView extends View {
                 numPad.hide();
                 break;
             case NumPad.FLAG:
-                if (sudokuBoard.flagged(focus.row, focus.col))
-                    sudokuBoard.unflag(focus.row, focus.col);
-                else
-                    sudokuBoard.flag(focus.row, focus.col);
+                sudokuBoard.flag(focus.row, focus.col, !sudokuBoard.flagged(focus.row, focus.col));
                 numPad.hide();
                 break;
             default:
@@ -226,6 +220,7 @@ public class SudokuView extends View {
                 if (value > 0) {
                     xx += cell / 2;
                     yy += cell / 2 - (mTextPaint.ascent() + mTextPaint.descent()) / 2;
+                    mTextPaint.setColor(sudokuBoard.conflicting(i, j) ? Color.RED : Color.BLACK);
                     canvas.drawText(Integer.toString(value), xx, yy, mTextPaint);
                 }
             }

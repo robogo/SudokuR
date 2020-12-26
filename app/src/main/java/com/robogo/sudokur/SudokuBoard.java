@@ -58,33 +58,32 @@ public class SudokuBoard extends Board implements Serializable {
     public void set(int i, int j, int value) {
         int old = value(i, j);
         set(i, j, VALUE_MASK, value);
+        check(i, j, value);
         history.push(Action.put(i, j, old));
     }
 
     public void clear(int i, int j) {
         int old = board[i][j];
         board[i][j] = 0;
+        check(i, j, 0);
         history.push(Action.clear(i, j, old));
     }
 
-    public void lock(int i, int j) {
-        set(i, j, LOCK_MASK, LOCK_MASK);
-        history.push(Action.lock(i, j));
+    public boolean lock(int i, int j, boolean v) {
+        set(i, j, LOCK_MASK, v ? LOCK_MASK : 0);
+        history.push(Action.lock(i, j, v ? 1 : 0));
+        return v;
     }
 
-    public void unlock(int i, int j) {
-        set(i, j, LOCK_MASK, 0);
-        history.push(Action.unlock(i, j));
+    public boolean flag(int i, int j, boolean v) {
+        set(i, j, FLAG_MASK, v ? FLAG_MASK : 0);
+        history.push(Action.flag(i, j, v ? 1 : 0));
+        return v;
     }
 
-    public void flag(int i, int j) {
-        set(i, j, FLAG_MASK, FLAG_MASK);
-        history.push(Action.flag(i, j));
-    }
-
-    public void unflag(int i, int j) {
-        set(i, j, FLAG_MASK, 0);
-        history.push(Action.unflag(i, j));
+    public boolean conflict(int i, int j, boolean v) {
+        set(i, j, CONFLICT_MASK, v ? CONFLICT_MASK : 0);
+        return v;
     }
 
     public void undo() {
@@ -93,21 +92,17 @@ public class SudokuBoard extends Board implements Serializable {
             switch (a.code) {
                 case Action.PUT:
                     set(a.row, a.col, VALUE_MASK, a.value);
+                    check(a.row, a.col, a.value);
                     break;
                 case Action.CLEAR:
                     board[a.row][a.col] = a.value;
+                    check(a.row, a.col, a.value);
                     break;
                 case Action.LOCK:
-                    set(a.row, a.col, LOCK_MASK, 0);
-                    break;
-                case Action.UNLOCK:
-                    set(a.row, a.col, LOCK_MASK, LOCK_MASK);
+                    set(a.row, a.col, LOCK_MASK, a.value == 0 ? LOCK_MASK : 0);
                     break;
                 case Action.FLAG:
-                    set(a.row, a.col, FLAG_MASK, 0);
-                    break;
-                case Action.UNFLAG:
-                    set(a.row, a.col, FLAG_MASK, FLAGS_MASK);
+                    set(a.row, a.col, FLAG_MASK, a.value == 0 ? FLAGS_MASK : 0);
                     break;
                 default:
                     break;
@@ -140,6 +135,28 @@ public class SudokuBoard extends Board implements Serializable {
 
     private int get(int i, int j, int bitMask) {
         return board[i][j] & bitMask;
+    }
+
+    private void check(int i, int j, int value) {
+        boolean conflicting = false;
+        for (int r = 0; r < row(); r++) {
+            if (r != i)
+                conflicting |= conflict(r, j, value == value(r, j));
+        }
+        for (int c = 0; c < col(); c++) {
+            if (c != j)
+                conflicting |= conflict(i, c, value == value(i, c));
+        }
+        for (int r = 0; r < 3; r++) {
+            int rr = i / 3 * 3 + r;
+            for (int c = 0; c < 3; c++) {
+                int cc = j / 3 * 3 + c;
+                if (rr != i && cc != j) {
+                    conflicting |= conflict(rr, cc, value == value(rr, cc));
+                }
+            }
+        }
+        conflict(i, j, conflicting);
     }
 
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {

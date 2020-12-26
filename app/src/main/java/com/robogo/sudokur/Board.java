@@ -6,6 +6,7 @@ public abstract class Board {
     static final int READONLY_MASK = 0x100;
     static final int LOCK_MASK = 0x200;
     static final int FLAG_MASK = 0x400;
+    static final int CONFLICT_MASK = 0x800;
 
     public abstract int row();
 
@@ -25,5 +26,9 @@ public abstract class Board {
 
     public boolean flagged(int i, int j) {
         return (flags(i, j) & FLAG_MASK) > 0;
+    }
+
+    public boolean conflicting(int i, int j) {
+        return (flags(i, j) & CONFLICT_MASK) > 0;
     }
 }

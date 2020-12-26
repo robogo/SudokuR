@@ -4,9 +4,7 @@ class Action {
     public static final int PUT = 0;
     public static final int CLEAR = 1;
     public static final int LOCK = 2;
-    public static final int UNLOCK = 3;
-    public static final int FLAG = 4;
-    public static final int UNFLAG = 5;
+    public static final int FLAG = 3;
 
     int code;
     int row;
@@ -28,19 +26,11 @@ class Action {
         return new Action(CLEAR, row, col, value);
     }
 
-    public static Action lock(int row, int col) {
-        return new Action(LOCK, row, col, 0);
+    public static Action lock(int row, int col, int value) {
+        return new Action(LOCK, row, col, value);
     }
 
-    public static Action unlock(int row, int col) {
-        return new Action(UNLOCK, row, col, 0);
-    }
-
-    public static Action flag(int row, int col) {
-        return new Action(FLAG, row, col, 0);
-    }
-
-    public static Action unflag(int row, int col) {
-        return new Action(UNFLAG, row, col, 0);
+    public static Action flag(int row, int col, int value) {
+        return new Action(FLAG, row, col, value);
     }
 }

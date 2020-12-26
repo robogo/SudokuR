@@ -44,18 +44,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onUndo(View view) {
-        sudokuBoard.undo();
-        sudokuView.invalidate();
+        if (sudokuBoard.initialized()) {
+            sudokuBoard.undo();
+            sudokuView.invalidate();
+        }
     }
 
     public void onUndoN(View view) {
-        sudokuBoard.undoN();
-        sudokuView.invalidate();
+        if (sudokuBoard.initialized()) {
+            sudokuBoard.undoN();
+            sudokuView.invalidate();
+        }
     }
 
     public void onSolution(View view) {
-        sudokuBoard.solve();
-        sudokuView.invalidate();
+        if (sudokuBoard.initialized()) {
+            sudokuBoard.solve();
+            sudokuView.invalidate();
+        }
     }
 
     public void onOption(View view) {
