@@ -55,11 +55,11 @@ public class SudokuBoard extends Board implements Serializable {
         return get(i, j, FLAGS_MASK);
     }
 
-    public void set(int i, int j, int value) {
+    public boolean set(int i, int j, int value) {
         int old = value(i, j);
         set(i, j, VALUE_MASK, value);
-        check(i, j, value);
         history.push(Action.put(i, j, old));
+        return check(i, j, value);
     }
 
     public void clear(int i, int j) {
@@ -137,26 +137,30 @@ public class SudokuBoard extends Board implements Serializable {
         return board[i][j] & bitMask;
     }
 
-    private void check(int i, int j, int value) {
+    private boolean check(int i, int j, int value) {
         boolean conflicting = false;
+        int st = i / 3 * 3;     // square top
+        int sl = j / 3 * 3;     // square left
+        int count = 0;
         for (int r = 0; r < row(); r++) {
-            if (r != i)
-                conflicting |= conflict(r, j, value == value(r, j));
-        }
-        for (int c = 0; c < col(); c++) {
-            if (c != j)
-                conflicting |= conflict(i, c, value == value(i, c));
-        }
-        for (int r = 0; r < 3; r++) {
-            int rr = i / 3 * 3 + r;
-            for (int c = 0; c < 3; c++) {
-                int cc = j / 3 * 3 + c;
-                if (rr != i && cc != j) {
-                    conflicting |= conflict(rr, cc, value == value(rr, cc));
+            for (int c = 0; c < col(); c++) {
+                if (r != i || c != j) {
+                    if (r == i)
+                        conflicting |= conflict(r, c, value == value(r, c));
+                    if (c == j)
+                        conflicting |= conflict(r, c, value == value(r, c));
+                    if (r >= st && r < st + 3 && c >= sl && c < sl + 3)
+                        conflicting |= conflict(r, c, value == value(r, c));
+                    if (!conflicting && value(r, c) > 0)
+                        count++;
                 }
             }
         }
-        conflict(i, j, conflicting);
+
+        if (!conflict(i, j, conflicting))
+            count++;
+
+        return count == row() * col();
     }
 
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {

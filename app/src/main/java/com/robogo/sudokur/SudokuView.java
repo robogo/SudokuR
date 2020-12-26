@@ -1,5 +1,6 @@
 package com.robogo.sudokur;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
@@ -10,6 +11,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import com.plattysoft.leonids.ParticleSystem;
 
 public class SudokuView extends View {
     private static final int REGION_WIDTH = 3;
@@ -125,7 +127,7 @@ public class SudokuView extends View {
         }
     }
 
-    boolean onMotionUp(MotionEvent event) {
+    private boolean onMotionUp(MotionEvent event) {
         // x and pt.x are translated to col, as y/pt.y to row
         float x = event.getX();
         float y = event.getY();
@@ -150,9 +152,11 @@ public class SudokuView extends View {
                 break;
             default:
                 if (num > 0) {
-                    if (!sudokuBoard.locked(focus.row, focus.col))
-                        sudokuBoard.set(focus.row, focus.col, num);
                     numPad.hide();
+                    if (!sudokuBoard.locked(focus.row, focus.col)) {
+                        boolean done = sudokuBoard.set(focus.row, focus.col, num);
+                        if (done) congrad();
+                    }
                 } else {
                     if (cell.row == focus.row && cell.col == focus.col && numPad.visible) {
                         numPad.hide();
@@ -174,12 +178,12 @@ public class SudokuView extends View {
         return true;
     }
 
-    void fillRect(Canvas canvas, float x, float y, float width, float height, int color) {
+    private void fillRect(Canvas canvas, float x, float y, float width, float height, int color) {
         mCellPaint.setColor(color);
         canvas.drawRect(x, y, x + width, y + height, mCellPaint);
     }
 
-    void drawGrid(Canvas canvas, float x, float y, float cell, int row, int col, int sub) {
+    private void drawGrid(Canvas canvas, float x, float y, float cell, int row, int col, int sub) {
         mLinePaint.setColor(Color.BLACK);
         float x2 = x + cell * col;
         for (int i = 0; i <= col; i++) {
@@ -195,7 +199,7 @@ public class SudokuView extends View {
         }
     }
 
-    void drawBoard(Canvas canvas, float x, float y, float cell) {
+    private void drawBoard(Canvas canvas, float x, float y, float cell) {
         for (int i = 0; i < sudokuBoard.row(); i++) {
             for (int j = 0; j < sudokuBoard.col(); j++) {
                 float xx = x + j * cell;
@@ -227,7 +231,7 @@ public class SudokuView extends View {
         }
     }
 
-    void drawNumPad(Canvas canvas, float x, float y, float cell) {
+    private void drawNumPad(Canvas canvas, float x, float y, float cell) {
         for (int i = 0; i < numPad.row(); i++) {
             for (int j = 0; j < numPad.col(); j++) {
                 float xx = x + j * cell;
@@ -252,15 +256,15 @@ public class SudokuView extends View {
         }
     }
 
-    int getNumPadIndex(int n, int max) {
+    private int getNumPadIndex(int n, int max) {
         return n <= max ? (n + 1) : (n - max);
     }
 
-    float getNumPadPos(int n, float cellSize) {
+    private float getNumPadPos(int n, float cellSize) {
         return n * cellSize;
     }
 
-    Cell getCell(float x, float y) {
+    private Cell getCell(float x, float y) {
         int size = Math.min(getWidth(), getHeight());
         if (x < 0 || x > size)
             return null;
@@ -268,6 +272,12 @@ public class SudokuView extends View {
             return null;
         float cellSize = size / Sudoku.Size;
         return new Cell((int)(y / cellSize), (int)(x / cellSize));
+    }
+
+    private void congrad() {
+        new ParticleSystem((Activity) getContext(), 200, R.drawable.ic_flower, 5000)
+                .setSpeedRange(0.2f, 0.5f)
+                .oneShot(this, 50);
     }
 
     static class Cell {
